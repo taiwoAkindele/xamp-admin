@@ -1,5 +1,5 @@
 import React from "react";
-import Loader from "../loader";
+import BtnLoader from "../loader/btnLoader";
 
 const Button = ({
   loading,
@@ -15,21 +15,21 @@ const Button = ({
 }) => {
   return (
     <div
-      className={`flex items-center gap-[8px] ${
+      onClick={onClick}
+      className={`flex items-center justify-center gap-[8px] py-[12px] px-[20px] w-full border rounded-[6px] cursor-pointer ${
         width ? `w-[${width}px]` : "w-[100%]"
       } ${containerClass}`}
     >
-      {loading && <Loader />}
       <button
         type={type}
         disabled={disabled}
-        onClick={onClick}
-        className={`py-[12px] px-[20px] w-full border rounded-[6px] ${className}`}
+        className={`outline-none border-none focus:border-none focus:outline-none ${className}`}
       >
         {startIcon && startIcon}
         {btnText}
         {endIcon && endIcon}
       </button>
+      {loading && <BtnLoader />}
     </div>
   );
 };
