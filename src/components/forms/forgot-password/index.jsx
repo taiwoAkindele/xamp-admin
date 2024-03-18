@@ -4,7 +4,7 @@ import { Form, Formik } from "formik";
 import Button from "../../button";
 import { ValidationSchema } from "./ValidationSchema";
 import { useNavigate } from "react-router-dom";
-import { useVerifyEmailMutation } from "../../../api/userSlice";
+import { useVerifyEmailMutation } from "../../../api/authSlice";
 import toast from "react-hot-toast";
 
 const ForgotPasswordForm = () => {

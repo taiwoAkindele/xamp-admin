@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { TextInput } from "../../inputs";
 import { Form, Formik } from "formik";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../../button";
 import { ValidationSchema } from "./ValidationSchema";
-import { useLoginUserMutation } from "../../../api/userSlice";
+import { useLoginUserMutation } from "../../../api/authSlice";
 import toast from "react-hot-toast";
 
 const LoginForm = () => {

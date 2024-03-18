@@ -5,7 +5,7 @@ import { TextInput } from "../../inputs";
 import { ValidationSchema } from "./ValidationSchema";
 import Button from "../../button";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useResetPasswordMutation } from "../../../api/userSlice";
+import { useResetPasswordMutation } from "../../../api/authSlice";
 import toast from "react-hot-toast";
 
 const ResetPasswordForm = () => {
