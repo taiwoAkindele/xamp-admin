@@ -4,21 +4,30 @@ import { ReactComponent as CheckMark } from "../../../assets/icons/check-icon.sv
 import { TextInput } from "../../inputs";
 import { ValidationSchema } from "./ValidationSchema";
 import Button from "../../button";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useResetPasswordMutation } from "../../../api/userSlice";
+import toast from "react-hot-toast";
 
 const ResetPasswordForm = () => {
   const navigate = useNavigate();
+  const { state } = useLocation();
+  console.log("state", state);
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
+
   return (
     <div>
       <Formik
         initialValues={{ password: "", confirmPassword: "" }}
         validationSchema={ValidationSchema}
         onSubmit={async (values, actions) => {
-          console.log(values);
-          navigate("/reset-password-success");
+          const payload = { ...state, password: values.password };
+          resetPassword(payload)
+            .unwrap()
+            .then(() => navigate("/reset-password-success"))
+            .catch((error) => toast.error(error.data.message));
         }}
       >
-        {({ handleChange, errors, values }) => (
+        {({ handleChange, errors, values, submitForm }) => (
           <Form className="flex flex-col gap-[20px]">
             <TextInput
               type="password"
@@ -64,9 +73,12 @@ const ResetPasswordForm = () => {
               </div>
             </div>
             <Button
+              loading={isLoading}
+              disabled={isLoading}
+              onClick={submitForm}
               type="submit"
               btnText="Reset password"
-              className="border-primary bg-[#023E8A] text-[16px] text-white leading-[24px] font-medium"
+              containerClass="border-primary bg-[#023E8A] text-[16px] text-white leading-[24px] font-medium"
             />
           </Form>
         )}

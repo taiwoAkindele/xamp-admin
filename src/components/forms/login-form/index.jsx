@@ -1,23 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { TextInput } from "../../inputs";
 import { Form, Formik } from "formik";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../../button";
 import { ValidationSchema } from "./ValidationSchema";
+import { useLoginUserMutation } from "../../../api/userSlice";
+import toast from "react-hot-toast";
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const [loginUserRequest, { isLoading }] = useLoginUserMutation();
+
   return (
     <div>
       <Formik
         initialValues={{ email: "", password: "" }}
         validationSchema={ValidationSchema}
         onSubmit={async (values, actions) => {
-          console.log(values);
-          navigate("/users");
+          loginUserRequest(values)
+            .unwrap()
+            .then(() => navigate("/users"))
+            .catch((error) => toast.error(error.data.message));
         }}
       >
-        {({ handleChange, errors }) => (
+        {({ handleChange, errors, submitForm }) => (
           <Form className="flex flex-col gap-[20px]">
             <TextInput
               type="text"
@@ -43,9 +49,12 @@ const LoginForm = () => {
               Forgot password?
             </Link>
             <Button
+              onClick={submitForm}
+              loading={isLoading}
+              disabled={isLoading}
               type="submit"
               btnText="Login"
-              className="border-primary bg-[#023E8A] text-[16px] text-white leading-[24px] font-medium"
+              containerClass="border-primary bg-[#023E8A] text-[16px] text-white leading-[24px] font-medium"
             />
           </Form>
         )}

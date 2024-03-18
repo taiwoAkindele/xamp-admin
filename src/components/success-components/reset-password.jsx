@@ -20,7 +20,7 @@ const ResetPasswordSuccess = () => {
         btnText="Login"
         type="button"
         onClick={() => navigate("/login")}
-        className="border-primary bg-[#023E8A] text-[16px] text-white leading-[24px] font-medium"
+        containerClass="border-primary bg-[#023E8A] text-[16px] text-white leading-[24px] font-medium"
       />
     </div>
   );

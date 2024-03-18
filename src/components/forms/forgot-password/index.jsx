@@ -4,20 +4,26 @@ import { Form, Formik } from "formik";
 import Button from "../../button";
 import { ValidationSchema } from "./ValidationSchema";
 import { useNavigate } from "react-router-dom";
+import { useVerifyEmailMutation } from "../../../api/userSlice";
+import toast from "react-hot-toast";
 
 const ForgotPasswordForm = () => {
   const navigate = useNavigate();
+  const [verifyEmail, { isLoading }] = useVerifyEmailMutation();
+
   return (
     <div>
       <Formik
         initialValues={{ email: "" }}
         validationSchema={ValidationSchema}
         onSubmit={async (values, actions) => {
-          console.log(values);
-          navigate("/verify-otp");
+          verifyEmail(values)
+            .unwrap()
+            .then(() => navigate("/verify-otp", { state: values }))
+            .catch((error) => toast.error(error.data.message));
         }}
       >
-        {({ handleChange, errors }) => (
+        {({ handleChange, errors, submitForm }) => (
           <Form className="flex flex-col gap-[20px]">
             <TextInput
               type="text"
@@ -29,9 +35,12 @@ const ForgotPasswordForm = () => {
             />
 
             <Button
+              loading={isLoading}
+              disabled={isLoading}
+              onClick={submitForm}
               type="submit"
               btnText="Reset Password"
-              className="border-primary bg-[#023E8A] text-[16px] text-white leading-[24px] font-medium"
+              containerClass="border-primary bg-[#023E8A] text-[16px] text-white leading-[24px] font-medium"
             />
           </Form>
         )}

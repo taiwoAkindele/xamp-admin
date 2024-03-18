@@ -14,6 +14,12 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const onLogoutClick = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
   const navigation = [
     { name: "Users", href: "/users", icon: <Users />, active: <UsersActive /> },
     {
@@ -71,7 +77,7 @@ const Sidebar = () => {
           </div>
         </div>
         <div
-          onClick={() => navigate("/login")}
+          onClick={onLogoutClick}
           className="py-[8px] px-[24px] cursor-pointer flex items-center gap-[8px]"
         >
           <Logout />
