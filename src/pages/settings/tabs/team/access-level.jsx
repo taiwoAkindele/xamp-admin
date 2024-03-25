@@ -6,6 +6,11 @@ import {
   teamsAccessTableData,
   teamsAccessTableHeader,
 } from "../../../../data/settings";
+import {
+  LEVELONEPERMISSIONS,
+  LEVELTHREEPERMISSIONS,
+  LEVELTWOPERMISSIONS,
+} from "../../../../config/permissions";
 
 const AccessLevel = () => {
   return (
@@ -34,24 +39,30 @@ const AccessLevel = () => {
                 </div>
               </td>
             ),
-            level1: () => (
+            level1: (item) => (
               <td>
                 <div className="py-[16px]">
-                  <Checkbox checked={true} />
+                  <Checkbox
+                    checked={LEVELONEPERMISSIONS?.includes(item.value)}
+                  />
                 </div>
               </td>
             ),
-            level2: () => (
+            level2: (item) => (
               <td>
                 <div className="py-[16px]">
-                  <Checkbox checked={true} />
+                  <Checkbox
+                    checked={LEVELTWOPERMISSIONS?.includes(item.value)}
+                  />
                 </div>
               </td>
             ),
-            level3: () => (
+            level3: (item) => (
               <td>
                 <div className="py-[16px]">
-                  <Checkbox checked={true} />
+                  <Checkbox
+                    checked={LEVELTHREEPERMISSIONS?.includes(item.value)}
+                  />
                 </div>
               </td>
             ),

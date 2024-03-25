@@ -1,0 +1,88 @@
+export const tableHeader = [
+  {
+    key: "initiator",
+    label: "Initiator",
+    _style: {
+      backgroundColor: "#F9FAFB",
+      width: "230px",
+      borderColor: "#EAECF0",
+      border: "1px",
+      borderRadius: "8px 0px 0px 8px",
+      padding: "12px 12px 12px 12px",
+      fontSize: "12px",
+      lineHeight: "18px",
+      color: "#475467",
+      fontWeight: 500,
+    },
+  },
+  {
+    key: "level",
+    label: "Level",
+    _style: {
+      backgroundColor: "#F9FAFB",
+      width: "230px",
+      padding: "12px 12px 12px 12px",
+      border: "1px",
+      borderColor: "rgba(190, 207, 231, 0.2)",
+      fontSize: "12px",
+      lineHeight: "18px",
+      color: "#475467",
+      fontWeight: 500,
+    },
+  },
+  {
+    key: "details",
+    label: "Details",
+    _style: {
+      backgroundColor: "#F9FAFB",
+      width: "230px",
+      padding: "12px 12px 12px 12px",
+      border: "1px",
+      borderColor: "rgba(190, 207, 231, 0.2)",
+      fontSize: "12px",
+      lineHeight: "18px",
+      color: "#475467",
+      fontWeight: 500,
+    },
+  },
+  {
+    key: "date",
+    label: "Date",
+    _style: {
+      backgroundColor: "#F9FAFB",
+      width: "187px",
+      padding: "12px 12px 12px 12px",
+      border: "1px",
+      borderColor: "rgba(190, 207, 231, 0.2)",
+      fontSize: "12px",
+      lineHeight: "18px",
+      color: "#475467",
+      fontWeight: 500,
+    },
+  },
+  {
+    key: "action",
+    label: "Actions",
+    _style: {
+      backgroundColor: "#F9FAFB",
+      width: "187px",
+      borderColor: "#EAECF0",
+      border: "1px",
+      borderRadius: "0px 8px 8px 0px",
+      padding: "12px 12px 12px 12px",
+      fontSize: "12px",
+      lineHeight: "18px",
+      color: "#475467",
+      fontWeight: 500,
+    },
+  },
+];
+
+export const tableData = [
+  {
+    initiator: "Taiwo Akindele",
+    level: 1,
+    details: "Verified Payment",
+    date: "22 Jan 2022, 5:42AM",
+  },
+];

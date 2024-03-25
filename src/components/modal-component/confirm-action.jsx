@@ -3,8 +3,9 @@ import OTPInput from "react-otp-input";
 import Button from "../button";
 import { Form, Formik } from "formik";
 
-const ConfirmAction = ({ nextAction }) => {
+const ConfirmAction = ({ nextAction, email, isLoading }) => {
   const [otp, setOtp] = useState("");
+
   return (
     <div className="flex flex-col gap-[20px]">
       {" "}
@@ -13,23 +14,23 @@ const ConfirmAction = ({ nextAction }) => {
           Confirm your action
         </h6>
         <p className="text-subtext text-center font-normal text-[16px] leading-[24px]">
-          We sent an OTP to onyeisi@gmail.com
+          We sent an OTP to {email}
         </p>
       </div>
       <Formik
         initialValues={{ otp: otp }}
-        // validationSchema={ValidationSchema}
         onSubmit={async (values, actions) => {
-          console.log(otp);
+          localStorage.setItem("otp", otp);
+          console.log("otp", otp);
           nextAction();
         }}
       >
-        {({ handleChange, errors }) => (
+        {({ handleChange, errors, submitForm }) => (
           <Form className="flex flex-col gap-[20px]">
             <OTPInput
               value={otp}
               onChange={setOtp}
-              numInputs={4}
+              numInputs={6}
               skipDefaultStyles={true}
               containerStyle="flex items-center justify-center gap-[12px]"
               renderInput={(props) => (
@@ -41,8 +42,11 @@ const ConfirmAction = ({ nextAction }) => {
             />
             <Button
               type="submit"
+              loading={isLoading}
+              onClick={submitForm}
+              // disabled={isLoading}
               btnText="Submit"
-              className="border-primary bg-[#023E8A] text-[16px] text-white leading-[24px] font-medium"
+              containerClass="border-primary bg-[#023E8A] text-[16px] text-white leading-[24px] font-medium"
             />
           </Form>
         )}

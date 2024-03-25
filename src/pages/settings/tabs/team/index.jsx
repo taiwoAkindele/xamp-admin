@@ -2,9 +2,13 @@ import React, { useState } from "react";
 import { AddAdminForm, Button, ModalComponent } from "../../../../components";
 import TeamMembers from "./team-members";
 import AccessLevel from "./access-level";
+import { useGetAdminTeamQuery } from "../../../../api/settingsSlice";
 
 const TeamSettings = () => {
   const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
+  const { data } = useGetAdminTeamQuery();
+  const { data: adminTeam } = data || {};
+
   return (
     <div className="flex flex-col gap-[20px]">
       <div className="flex items-center justify-between">
@@ -22,10 +26,10 @@ const TeamSettings = () => {
           btnText="Add member"
           onClick={() => setIsAddAdminOpen(true)}
           width="max"
-          className="border-primary bg-[#023E8A] w-max text-[16px] text-white leading-[24px] font-medium"
+          containerClass="border-primary bg-[#023E8A] w-max text-[16px] text-white leading-[24px] font-medium"
         />
       </div>
-      <TeamMembers />
+      <TeamMembers adminTeamMembers={adminTeam} />
       <AccessLevel />
       {isAddAdminOpen && (
         <ModalComponent

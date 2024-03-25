@@ -1,10 +1,10 @@
 import React from "react";
 import { CDataTable } from "@coreui/react";
-import { Box, Button } from "../../../../components";
+import { Box } from "../../../../components";
 import Checkbox from "../../../../components/inputs/checkbox";
 import { tableData, tableHeader } from "../../../../data/settings";
 
-const AccessLevel = () => {
+const AccessLevel = ({ userPermissions }) => {
   return (
     <div className="flex flex-col gap-[32px]">
       <h1 className="text-[20px] leading-[23px] font-semibold text-black100">
@@ -31,20 +31,16 @@ const AccessLevel = () => {
                 </div>
               </td>
             ),
-            level: () => (
+            level: (item) => (
               <td>
                 <div className="py-[16px]">
-                  <Checkbox checked={true} />
+                  <Checkbox checked={userPermissions?.includes(item?.value)} />
                 </div>
               </td>
             ),
           }}
         />
       </Box>
-      <Button
-        btnText="Save Changes"
-        className="border border-[#023E8A] bg-[#023E8A] w-[140px] font-medium"
-      />
     </div>
   );
 };

@@ -2,29 +2,40 @@ import { Form, Formik } from "formik";
 import React, { useState } from "react";
 import Button from "../../../../components/button";
 import { FormControlLabel, Switch } from "@mui/material";
+import {
+  useGetAdvancedSettingsQuery,
+  useUpdateAdvancedSettingsMutation,
+} from "../../../../api/settingsSlice";
+import toast from "react-hot-toast";
 
 const AdvancedSettings = () => {
-  const [restrictFunding, setRestrictFunding] = useState(false);
-  const [restrictWithdrawal, setRestrictWithdrawal] = useState(false);
-  const [restrictLandlord, setRestrictLandlord] = useState(false);
-  const [restrictAgent, setRestrictAgent] = useState(false);
-  const [restrictTenant, setRestrictTenant] = useState(false);
+  const { data } = useGetAdvancedSettingsQuery();
+  const { data: advancedSettings } = data || {};
+
+  const [modifyAdvancedSettings, { isLoading }] =
+    useUpdateAdvancedSettingsMutation();
+
   return (
     <Formik
       initialValues={
-        {
-          // approval: "",
-          // termination: "",
-          // rentIncrement: "",
-          // verification: "",
+        advancedSettings || {
+          restrictFunding: false,
+          restrictGuestsFromListing: false,
+          restrictLandlordsFromListing: false,
+          restrictTenantsFromRentingOrBuying: false,
+          restrictWithdrawal: false,
         }
       }
-      // validationSchema={ValidationSchema}
       onSubmit={async (values, actions) => {
-        console.log(values);
+        modifyAdvancedSettings(values)
+          .unwrap()
+          .then((response) => console.log(response))
+          .catch((error) =>
+            toast.error(error?.data?.message || "An error occurred, try again!")
+          );
       }}
     >
-      {({ handleChange, errors, setFieldValue }) => (
+      {({ handleChange, errors, setFieldValue, values }) => (
         <Form className="flex flex-col gap-[20px]">
           <div className="flex flex-col gap-[40px]">
             <div className="flex items-center justify-between">
@@ -36,7 +47,7 @@ const AdvancedSettings = () => {
                 type="submit"
                 btnText="Save changes"
                 width="max"
-                className="border-primary bg-[#023E8A] w-max text-[16px] text-white leading-[24px] font-medium"
+                containerClass="border-primary bg-[#023E8A] w-max text-[16px] text-white leading-[24px] font-medium"
               />
             </div>
             <div className="flex items-center gap-[64px] border-b border-gray800 py-[20px]">
@@ -49,10 +60,10 @@ const AdvancedSettings = () => {
                 </span>
               </div>
               <Switch
-                checked={restrictFunding}
-                value={restrictFunding}
+                checked={values?.restrictFunding}
+                name="restrictFunding"
+                value={values?.restrictFunding}
                 onChange={(e) => {
-                  setRestrictFunding(e.target.checked);
                   setFieldValue("restrictFunding", e.target.checked);
                 }}
                 inputProps={{ "aria-label": "controlled" }}
@@ -69,10 +80,9 @@ const AdvancedSettings = () => {
                 </span>
               </div>
               <Switch
-                checked={restrictWithdrawal}
-                value={restrictWithdrawal}
+                checked={values?.restrictWithdrawal}
+                value={values?.restrictWithdrawal}
                 onChange={(e) => {
-                  setRestrictWithdrawal(e.target.checked);
                   setFieldValue("restrictWithdrawal", e.target.checked);
                 }}
                 inputProps={{ "aria-label": "controlled" }}
@@ -92,11 +102,14 @@ const AdvancedSettings = () => {
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={restrictLandlord}
-                        value={restrictLandlord}
+                        checked={values?.restrictLandlordsFromListing}
+                        value={values?.restrictLandlordsFromListing}
+                        name="restrictLandlordsFromListing"
                         onChange={(e) => {
-                          setRestrictLandlord(e.target.checked);
-                          setFieldValue("restrictLandlord", e.target.checked);
+                          setFieldValue(
+                            "restrictLandlordsFromListing",
+                            e.target.checked
+                          );
                         }}
                         inputProps={{ "aria-label": "controlled" }}
                       />
@@ -110,11 +123,14 @@ const AdvancedSettings = () => {
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={restrictAgent}
-                        value={restrictAgent}
+                        checked={values?.restrictGuestsFromListing}
+                        name="restrictGuestsFromListing"
+                        value={values?.restrictGuestsFromListing}
                         onChange={(e) => {
-                          setRestrictAgent(e.target.checked);
-                          setFieldValue("restrictAgent", e.target.checked);
+                          setFieldValue(
+                            "restrictGuestsFromListing",
+                            e.target.checked
+                          );
                         }}
                         inputProps={{ "aria-label": "controlled" }}
                       />
@@ -138,11 +154,14 @@ const AdvancedSettings = () => {
                   </span>
                 </div>
                 <Switch
-                  checked={restrictTenant}
-                  value={restrictTenant}
+                  checked={values?.restrictTenantsFromRentingOrBuying}
+                  value={values?.restrictTenantsFromRentingOrBuying}
+                  name="restrictTenantsFromRentingOrBuying"
                   onChange={(e) => {
-                    setRestrictTenant(e.target.checked);
-                    setFieldValue("restrictTenant", e.target.checked);
+                    setFieldValue(
+                      "restrictTenantsFromRentingOrBuying",
+                      e.target.checked
+                    );
                   }}
                   inputProps={{ "aria-label": "controlled" }}
                 />

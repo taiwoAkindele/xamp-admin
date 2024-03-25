@@ -2,42 +2,70 @@ import React, { useState } from "react";
 import {
   ActionContent,
   Badge,
-  Button,
   ConfirmAction,
   ModalComponent,
   PageLayout,
 } from "../../components";
-import { ReactComponent as FreezeIcon } from "../../assets/icons/freeze-icon.svg";
-import { ReactComponent as UnverifiedIcon } from "../../assets/icons/unverified-icon.svg";
 import { ReactComponent as ActionIcon } from "../../assets/icons/action.svg";
-import { listingFields, listingTableItems } from "../../data/listings";
+import { listingFields } from "../../data/listings";
 import { useNavigate } from "react-router-dom";
+import { useGetAllListingsQuery } from "../../api/listingSlice";
+import { capitalizeFirstLetter } from "../../utils";
+import FreezeModal from "../../components/modal-component/freeze-modal";
+import UnverifyModal from "../../components/modal-component/unverify-modal";
+import useDebounce from "../../hooks/useDebounce";
+import { useSelector } from "react-redux";
 
 const Listings = () => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(listingTableItems.length / 10);
+  const [searchValue, setSearchValue] = useState("");
+  const debouncedSearchValue = useDebounce(searchValue, 700);
+  const queryParams = {
+    page: currentPage || 1,
+    limit: 10,
+    q: debouncedSearchValue,
+  };
+  const { data, isFetching } = useGetAllListingsQuery(queryParams);
+  const { listings: listingTableItems, total } = data?.data || {};
+
+  const totalPages = Math.ceil(total / 10);
   const [isShowMenu, setIsShowMenu] = useState(false);
   const [tableItem, setTableItem] = useState({});
-  const navigate = useNavigate();
   const [freeze, setFreeze] = useState(false);
   const [flagIsUnverified, setFlagIsUnverified] = useState(false);
   const [showConfirmAction, setShowConfirmAction] = useState(false);
+  const { adminLevel } = useSelector((store) => store.auth);
 
   return (
     <>
       <PageLayout
         pageTitle="Listings"
         isSearchPresent={true}
-        isFilterPresent={true}
+        isPrimaryFilterPresent={true}
         placeholder="Search"
+        searchValue={searchValue}
+        onSearchChange={(e) => setSearchValue(e.target.value)}
+        loading={isFetching}
         tableData={listingTableItems}
         tableHeader={listingFields}
         currentPage={currentPage}
         scopedSlots={{
           status: (item) => (
             <td>
-              <Badge status={item.status} check="Unverified" />
+              <Badge
+                status={item.isVerified ? "Verified" : "Unverified"}
+                check="Unverified"
+              />
             </td>
+          ),
+          title: (item) => <td>{capitalizeFirstLetter(item?.title)}</td>,
+          owner: (item) => <td>{item?.User?.email}</td>,
+          propertyType: (item) => (
+            <td>{capitalizeFirstLetter(item?.propertyType)}</td>
+          ),
+          listingType: (item) => (
+            <td>{capitalizeFirstLetter(item?.listingType)}</td>
           ),
           action: (item) => (
             <td className="">
@@ -50,40 +78,56 @@ const Listings = () => {
                   className="cursor-pointer"
                 />
               </div>
-              {isShowMenu && tableItem.propertyName === item.propertyName ? (
+              {isShowMenu && tableItem?.listingId === item?.listingId ? (
                 <div className="absolute w-[186px] py-[4px] right-[30px] z-10 flex flex-col  bg-white border border-gray800 rounded-[8px] shadow-menu">
                   <ActionContent
                     show={
-                      isShowMenu && tableItem.propertyName === item.propertyName
+                      isShowMenu && tableItem?.listingId === item?.listingId
                     }
                     onClose={() => setIsShowMenu(false)}
                     menuItems={[
                       {
                         name: "View Property",
-                        click: () => navigate(`${item.id}`, { state: item }),
+                        click: () =>
+                          navigate(`${item?.listingId}`, { state: item }),
                       },
-                      {
-                        name:
-                          item.status === "Unapprove" ? "Approve" : "Unapprove",
-                        // click: () => setIsClicked("approve"),
-                      },
-                      {
-                        name:
-                          item.status === "Verified"
-                            ? "Flag As Unverified"
-                            : "Verify Property",
-                        click: () => {
-                          setFlagIsUnverified(true);
-                          setIsShowMenu(false);
-                        },
-                      },
-                      {
-                        name: item.status === "Freeze" ? "UnFreeze" : "Freeze",
-                        click: () => {
-                          setFreeze(true);
-                          setIsShowMenu(false);
-                        },
-                      },
+                      ...(adminLevel !== 1
+                        ? [
+                            {
+                              name:
+                                item?.isApproved === true
+                                  ? "Unapprove"
+                                  : "Approve",
+                              // click: () => setIsClicked("approve"),
+                            },
+                          ]
+                        : []),
+                      ...(adminLevel !== 1
+                        ? [
+                            {
+                              name:
+                                item?.isVerified === true
+                                  ? "Flag As Unverified"
+                                  : "Verify Property",
+                              click: () => {
+                                setFlagIsUnverified(true);
+                                setIsShowMenu(false);
+                              },
+                            },
+                          ]
+                        : []),
+                      ...(adminLevel !== 1
+                        ? [
+                            {
+                              name:
+                                item?.isFrozen === true ? "UnFreeze" : "Freeze",
+                              click: () => {
+                                setFreeze(true);
+                                setIsShowMenu(false);
+                              },
+                            },
+                          ]
+                        : []),
                     ]}
                   />
                 </div>
@@ -95,69 +139,24 @@ const Listings = () => {
         setCurrentPage={setCurrentPage}
       />
       {freeze && (
-        <ModalComponent show={freeze} onClose={() => setFreeze(false)}>
-          <div className="flex flex-col gap-[4px] items-center justify-center">
-            <FreezeIcon />
-            <h5 className="text-[20px] font-semibold leading-[28px] text-[#101828]">
-              Freeze Listing!
-            </h5>
-            <p className="text-[#475467] font-normal text-[14px] leading-[20px]">
-              Are you sure you want to freeze this listing?
-            </p>
-          </div>
-          <div className="flex items-center gap-[12px] pt-[28px]">
-            <Button
-              type="button"
-              btnText="Cancel"
-              onClick={() => setFreeze(false)}
-              className="border-[#D0D5DD] bg-[#fff] text-[16px] text-[#344054] leading-[24px] font-medium"
-            />
-
-            <Button
-              type="button"
-              btnText="Continue"
-              onClick={() => {
-                setShowConfirmAction(true);
-                setFreeze(false);
-              }}
-              className="border-primary bg-[#023E8A] text-[16px] text-white leading-[24px] font-medium"
-            />
-          </div>
-        </ModalComponent>
+        <FreezeModal
+          show={freeze}
+          onClose={() => setFreeze(false)}
+          onContinue={() => {
+            setShowConfirmAction(true);
+            setFreeze(false);
+          }}
+        />
       )}
       {flagIsUnverified && (
-        <ModalComponent
-          show={freeze}
+        <UnverifyModal
+          show={flagIsUnverified}
           onClose={() => setFlagIsUnverified(false)}
-        >
-          <div className="flex flex-col gap-[4px] items-center justify-center">
-            <UnverifiedIcon />
-            <h5 className="text-[20px] font-semibold leading-[28px] text-[#101828]">
-              Flag as unverified!
-            </h5>
-            <p className="text-[#475467] font-normal text-[14px] leading-[20px]">
-              Are you sure you want to flag this listing?
-            </p>
-          </div>
-          <div className="flex items-center gap-[12px] pt-[28px]">
-            <Button
-              type="button"
-              btnText="Cancel"
-              onClick={() => setFlagIsUnverified(false)}
-              className="border-[#D0D5DD] bg-[#fff] text-[16px] text-[#344054] leading-[24px] font-medium"
-            />
-
-            <Button
-              type="button"
-              btnText="Continue"
-              onClick={() => {
-                setShowConfirmAction(true);
-                setFlagIsUnverified(false);
-              }}
-              className="border-primary bg-[#023E8A] text-[16px] text-white leading-[24px] font-medium"
-            />
-          </div>
-        </ModalComponent>
+          onContinue={() => {
+            setShowConfirmAction(true);
+            setFlagIsUnverified(false);
+          }}
+        />
       )}
       {showConfirmAction && (
         <ModalComponent

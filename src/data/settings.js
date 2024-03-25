@@ -1,4 +1,5 @@
 import Avatar from "../assets/images/Avatar.svg";
+import { PERMISSIONS } from "../config/permissions";
 
 export const tableHeader = [
   {
@@ -39,27 +40,44 @@ export const tableData = [
   {
     title: "View Transactions",
     subtitle: "",
+    value: PERMISSIONS?.VIEW_TRANSACTIONS,
   },
-  { title: "Approve Transactions", subtitle: "" },
-  { title: "View User Account", subtitle: "" },
+  {
+    title: "Approve Transactions",
+    subtitle: "",
+    value: PERMISSIONS?.APPROVE_TRANSACTIONS,
+  },
+  {
+    title: "View User Account",
+    subtitle: "",
+    value: PERMISSIONS?.VIEW_USER_ACCOUNT,
+  },
   {
     title: "Perform action on user account",
     subtitle: "Block and approve user account",
+    value: PERMISSIONS?.BLOCK_AND_APPROVE_USER_ACCOUNT,
   },
-  { title: "View Listing", subtitle: "" },
+  { title: "View Listing", subtitle: "", value: PERMISSIONS?.VIEW_LISTINGS },
   {
     title: "Perform action on listings",
     subtitle: "Freeze, flag and approve listings",
+    value: PERMISSIONS?.FREEZE_FLAG_APPROVE_LISTINGS,
   },
-  { title: "Admin", subtitle: "View, add, promote and demote admin" },
+  {
+    title: "Admin",
+    subtitle: "View, add, promote and demote admin",
+    value: PERMISSIONS?.VIEW_ADD_PROMOTE_DEMOTE_ADMINS,
+  },
   {
     title: "Transaction Fees",
     subtitle: "Determine transaction fees and percentages",
+    value: PERMISSIONS?.DETERMINE_TRANSACTIONS_FEES,
   },
   {
     title: "Set Timeframe",
     subtitle:
       "Approvals on listings, verifications, rent increment and tenancy termination",
+    value: PERMISSIONS?.SET_TIMEFRAME,
   },
 ];
 
@@ -138,44 +156,6 @@ export const teamsTableHeader = [
   },
 ];
 
-export const teamsTableData = [
-  {
-    name: "Olivia Rhye",
-    email: "olivia@untiledui.com",
-    image: Avatar,
-    level: "Level 1",
-    date: "Feb 22, 2022",
-  },
-  {
-    name: "Olivia Rhye",
-    email: "olivia@untiledui.com",
-    image: Avatar,
-    level: "Level 1",
-    date: "Feb 22, 2022",
-  },
-  {
-    name: "Olivia Rhye",
-    email: "olivia@untiledui.com",
-    image: Avatar,
-    level: "Level 1",
-    date: "Feb 22, 2022",
-  },
-  {
-    name: "Olivia Rhye",
-    email: "olivia@untiledui.com",
-    image: Avatar,
-    level: "Level 1",
-    date: "Feb 22, 2022",
-  },
-  {
-    name: "Olivia Rhye",
-    email: "olivia@untiledui.com",
-    image: Avatar,
-    level: "Level 1",
-    date: "Feb 22, 2022",
-  },
-];
-
 export const teamsAccessTableHeader = [
   {
     key: "action",
@@ -247,26 +227,43 @@ export const teamsAccessTableData = [
   {
     title: "View Transactions",
     subtitle: "",
+    value: PERMISSIONS?.VIEW_TRANSACTIONS,
   },
-  { title: "Approve Transactions", subtitle: "" },
-  { title: "View User Account", subtitle: "" },
+  {
+    title: "Approve Transactions",
+    subtitle: "",
+    value: PERMISSIONS?.APPROVE_TRANSACTIONS,
+  },
+  {
+    title: "View User Account",
+    subtitle: "",
+    value: PERMISSIONS?.VIEW_USER_ACCOUNT,
+  },
   {
     title: "Perform action on user account",
     subtitle: "Block and approve user account",
+    value: PERMISSIONS?.BLOCK_AND_APPROVE_USER_ACCOUNT,
   },
-  { title: "View Listing", subtitle: "" },
+  { title: "View Listing", subtitle: "", value: PERMISSIONS?.VIEW_LISTINGS },
   {
     title: "Perform action on listings",
     subtitle: "Freeze, flag and approve listings",
+    value: PERMISSIONS?.FREEZE_FLAG_APPROVE_LISTINGS,
   },
-  { title: "Admin", subtitle: "View, add, promote and demote admin" },
+  {
+    title: "Admin",
+    subtitle: "View, add, promote and demote admin",
+    value: PERMISSIONS?.VIEW_ADD_PROMOTE_DEMOTE_ADMINS,
+  },
   {
     title: "Transaction Fees",
     subtitle: "Determine transaction fees and percentages",
+    value: PERMISSIONS?.DETERMINE_TRANSACTIONS_FEES,
   },
   {
     title: "Set Timeframe",
     subtitle:
       "Approvals on listings, verifications, rent increment and tenancy termination",
+    value: PERMISSIONS?.SET_TIMEFRAME,
   },
 ];

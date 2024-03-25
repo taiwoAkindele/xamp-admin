@@ -34,7 +34,7 @@ const ListingSettings = () => {
                 type="submit"
                 btnText="Save changes"
                 width="max"
-                className="border-primary bg-[#023E8A] w-max text-[16px] text-white leading-[24px] font-medium"
+                containerClass="border-primary bg-[#023E8A] w-max text-[16px] text-white leading-[24px] font-medium"
               />
             </div>
             <div className="border-t border-t-[#EAECF0] pt-[20px] flex flex-col gap-[20px]">

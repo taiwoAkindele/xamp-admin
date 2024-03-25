@@ -3,16 +3,29 @@ import React, { useState } from "react";
 import { TextInput } from "../../inputs";
 import { FormControl, MenuItem, Select } from "@mui/material";
 import Button from "../../button";
+import { useCreateAdminMutation } from "../../../api/settingsSlice";
+import toast from "react-hot-toast";
+import { ValidationSchema } from "./ValidationSchema";
 
 const AddAdmin = () => {
   const [level, setLevel] = useState("");
+  const [createNewAdmin, { isLoading }] = useCreateAdminMutation();
   return (
     <div>
       <Formik
         initialValues={{ email: "", firstName: "", lastName: "", level: "" }}
-        // validationSchema={ValidationSchema}
+        validationSchema={ValidationSchema}
         onSubmit={async (values, actions) => {
-          console.log(values);
+          createNewAdmin(values)
+            .unwrap()
+            .then(() => {
+              close();
+            })
+            .catch((error) => {
+              toast.error(
+                error?.data?.message || "An error occurred, please try again!"
+              );
+            });
         }}
       >
         {({ handleChange, errors, setFieldValue }) => (
@@ -64,15 +77,17 @@ const AddAdmin = () => {
                   }
                 }}
               >
-                <MenuItem value="level 1">Level 1</MenuItem>
-                <MenuItem value="level 2">Level 2</MenuItem>
-                <MenuItem value="level 3">Level 3</MenuItem>
+                <MenuItem value="1">Level 1</MenuItem>
+                <MenuItem value="2">Level 2</MenuItem>
+                <MenuItem value="3">Level 3</MenuItem>
               </Select>
             </FormControl>
             <Button
               type="submit"
+              loading={isLoading}
+              disabled={isLoading}
               btnText="Add Admin"
-              className="border-primary bg-[#023E8A] text-[16px] text-white leading-[24px] font-medium"
+              containerClass="border-primary bg-[#023E8A] text-[16px] text-white leading-[24px] font-medium"
             />
           </Form>
         )}

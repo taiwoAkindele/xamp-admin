@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { currentAPI } from "../config";
-import { setAuthToken } from "../redux/auth/slice";
+import { setAdminLevel, setAuthToken } from "../redux/auth/slice";
 
 const authenticationAPI = `${currentAPI}/auth`;
 
@@ -20,13 +20,14 @@ export const authApi = createApi({
         try {
           const { data } = await queryFulfilled;
           dispatch(setAuthToken(data.data.token));
+          dispatch(setAdminLevel(data.data.level));
         } catch (error) {
           //   toast.error("An error occurred, try again!");
           dispatch(setAuthToken(null));
         }
       },
     }),
-    verifyEmail: builder.mutation({
+    sendOtp: builder.mutation({
       query: (payload) => {
         return {
           url: "/user/send-otp",
@@ -44,11 +45,21 @@ export const authApi = createApi({
         };
       },
     }),
+    changePassword: builder.mutation({
+      query: (payload) => {
+        return {
+          url: "/admin/change-password",
+          method: "POST",
+          body: payload,
+        };
+      },
+    }),
   }),
 });
 
 export const {
   useLoginUserMutation,
-  useVerifyEmailMutation,
+  useSendOtpMutation,
   useResetPasswordMutation,
+  useChangePasswordMutation,
 } = authApi;

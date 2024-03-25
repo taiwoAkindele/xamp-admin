@@ -4,10 +4,17 @@ import NinImage from "../../../assets/images/nin.svg";
 import { ReactComponent as FileType } from "../../../assets/icons/file-type.svg";
 import { ReactComponent as SophiaEstate } from "../../../assets/images/sophia-estate.svg";
 import { ReactComponent as OliviaEstate } from "../../../assets/images/olivia-estate.svg";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Button, Box, Badge, ConfirmAction } from "../../../components";
-import { userDetails, userNextofKin } from "../../../data/users";
+import { fetchUserType, userNextofKin } from "../../../data/users";
 import ModalComponent from "../../../components/modal-component";
+import {
+  useBlockOrUnblockUserMutation,
+  useGetUserQuery,
+} from "../../../api/userSlice";
+import toast from "react-hot-toast";
+import { capitalizeFirstLetter } from "../../../utils";
+import { useSelector } from "react-redux";
 
 const userFiles = [
   { icon: <FileType />, name: "National Identity File.svg", image: NinImage },
@@ -31,16 +38,59 @@ const userApartments = [
 ];
 
 const UserDetails = () => {
-  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+  const { id } = useParams();
+  const { data } = useGetUserQuery(id, { skip: !id });
+  const [accountStatusFn, { isLoading }] = useBlockOrUnblockUserMutation();
+  const { adminLevel } = useSelector((store) => store.auth);
+
+  const [showModal, setShowModal] = useState(false);
   const [showImage, setShowImage] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const { kyc, user, listings } = data?.data || {};
 
-  console.log({ showImage, selectedImage });
+  const userDetails = [
+    {
+      name: "Account Type",
+      value: fetchUserType(user?.role)?.type || "-",
+    },
+    {
+      name: "Gender",
+      value: user?.gender || "-",
+    },
+    {
+      name: "Unique ID",
+      value: user?.xampId || "-",
+    },
+    {
+      name: "Phone Number",
+      value: user?.phoneNumber || "-",
+    },
+  ];
+
+  const handleAccountStatus = () => {
+    let payload;
+    if (user?.accountStatus === 1) {
+      payload = { action: "block" };
+    } else {
+      payload = { action: "unblock" };
+    }
+    accountStatusFn({ payload: payload, id: id })
+      .unwrap()
+      .then((res) => {
+        toast.success(res.message);
+      })
+      .catch((error) => {
+        toast.error(error.data.message);
+      });
+  };
 
   return (
     <div className="flex flex-col gap-[20px]">
-      <div className="flex items-center gap-[8px]">
+      <div
+        onClick={() => navigate(-1)}
+        className="flex items-center font-medium text-[16px] underline gap-[8px] cursor-pointer"
+      >
         <ArrowLeft />
         <Link style={{ textDecoration: "none" }} to={-1}>
           Back
@@ -51,36 +101,51 @@ const UserDetails = () => {
         <h6 className="font-semibold text-[24px] leading-[28px] text-black200 capitalize">
           User Details
         </h6>
-        <Button
-          btnText="Request Permission"
-          onClick={() => setShowModal(true)}
-          type="button"
-          width={100}
-          className="text-black400 h-[40px] text-[16px] leading-[24px] font-medium flex items-center gap-[8px]"
-        />
+        <div className="flex items-center gap-[8px]">
+          <Button
+            btnText="Block User"
+            onClick={handleAccountStatus}
+            type="button"
+            width={100}
+            containerClass="text-[#EA1212] h-[40px] border-[#EA1212] bg-[#fff] text-[16px] leading-[24px] font-medium flex items-center gap-[8px]"
+          />
+
+          {adminLevel !== 1 && (
+            <Button
+              btnText="Verify Account"
+              onClick={() => setShowModal(true)}
+              type="button"
+              width={100}
+              containerClass="text-[#fff] border-[#023E8A] bg-[#023E8A] h-[40px] text-[16px] leading-[24px] font-medium flex items-center gap-[8px]"
+            />
+          )}
+        </div>
       </div>
 
       <Box className="flex flex-col gap-[24px] p-[24px]">
         <div className="flex items-center gap-[12px]">
           <div className="w-[72px] h-[72px] bg-gray900 rounded-[200px] flex items-center justify-center">
             <span className="text-[24px] leading-[32px] text-center font-medium text-[#42428E]">
-              M
+              {user?.firstName?.charAt(0)}
             </span>
           </div>
           <div className="flex flex-col gap-[4px]">
             <span className="font-semibold text-[22px] leading-[25px] text-black300">
-              Michael Levin
+              {user?.lastName || ""} {user?.firstName || ""}
             </span>
-            <span className="text-gray500 text-[16px] leading-[20px]">
-              Jordynlevin@gmail.com
+            <span className="text-gray500 font-normal text-[16px] leading-[20px]">
+              {user?.email || ""}
             </span>
           </div>
-          <Badge status="Verified" check="Unverified" />
+          <Badge
+            status={user?.accountStatus === 1 ? "Verified" : "Unverified"}
+            check="Unverified"
+          />
         </div>
         <div className="h-[1px] bg-[#D9D9D9]"></div>
         <div className="grid grid-cols-2 gap-y-[16px]">
           {userDetails.map((user) => (
-            <div className="flex items-center">
+            <div key={user?.name} className="flex items-center">
               <span className="text-[16px] w-[246px] font-normal leading-[24px] text-gray500">
                 {`${user.name}:`}
               </span>
@@ -137,26 +202,31 @@ const UserDetails = () => {
         <span className="font-semibold text-[20px] leading-[20px] text-black300">
           Apartments
         </span>
-        <div className="flex items-center gap-[24px]">
-          {userApartments.map((appt, i) => (
+        <div className="flex items-center flex-wrap gap-x-[24px] gap-y-[24px]">
+          {listings?.map((listing) => (
             <div
-              key={i}
-              onClick={() => navigate(`/listings/${i}`)}
+              key={listing?.listingId}
+              onClick={() => navigate(`/listings/${listing?.listingId}`)}
               className="flex flex-col gap-[12px] cursor-pointer"
             >
-              {appt.image}
+              <img
+                src={listing.images?.[0]}
+                alt=""
+                className="w-[328px] h-[159px] object-cover rounded-[12px]"
+              />
+
               <span className="font-semibold text-[18px] leading-[21px] text-black100">
-                {appt.name}
+                {capitalizeFirstLetter(listing?.title)}
               </span>
               <span className="font-normal text-[14px] leading-[16px] text-subtext">
-                {appt.location}
+                {listing?.address} {listing?.city} {listing?.country}
               </span>
               <div className="flex items-center gap-[8px]">
                 <span className="font-normal text-[14px] leading-[16px] text-subtext">
                   Landlord:
                 </span>
                 <span className="font-medium text-[14px] leading-[16px] text-black300">
-                  {appt.landlord}
+                  {user?.lastName || ""} {user?.firstName || ""}
                 </span>
               </div>
             </div>

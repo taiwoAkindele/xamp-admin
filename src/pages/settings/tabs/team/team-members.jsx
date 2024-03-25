@@ -9,16 +9,37 @@ import { CDataTable } from "@coreui/react";
 import { ReactComponent as EditIcon } from "../../../../assets/icons/edit-pencil.svg";
 import { ReactComponent as DeleteIcon2 } from "../../../../assets/icons/freeze-icon.svg";
 import { ReactComponent as DeleteIcon } from "../../../../assets/icons/delete-icon.svg";
-import { teamsTableData, teamsTableHeader } from "../../../../data/settings";
+import { teamsTableHeader } from "../../../../data/settings";
+import {
+  LEVELONEPERMISSIONS,
+  LEVELTWOPERMISSIONS,
+} from "../../../../config/permissions";
+import { useDeleteAdminMutation } from "../../../../api/settingsSlice";
+import toast from "react-hot-toast";
 
-const TeamMembers = () => {
+const TeamMembers = ({ adminTeamMembers }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showConfirmAction, setShowConfirmAction] = useState(false);
+  const [actionableId, setActionableId] = useState("");
+  const [removeAdminMember, { isLoading }] = useDeleteAdminMutation();
+
+  const handleDeleteAdmin = () => {
+    removeAdminMember(actionableId)
+      .unwrap()
+      .then(() => {
+        setActionableId("");
+        setShowDeleteModal(false);
+      })
+      .catch((error) =>
+        toast.error(error?.data?.message || "An error occurred, try again!")
+      );
+  };
+
   return (
     <div>
       <Box>
         <CDataTable
-          items={teamsTableData || []}
+          items={adminTeamMembers || []}
           fields={teamsTableHeader}
           selectable
           striped
@@ -27,13 +48,17 @@ const TeamMembers = () => {
             name: (item) => (
               <td className="">
                 <div className="flex items-center gap-[12px] py-[16px] px-[10px]">
-                  <img src={item.image} alt={item.name} className="" />
+                  <img
+                    src={item?.profileImage}
+                    alt={item?.email}
+                    className="w-[40px] h-[40px] object-contain"
+                  />
                   <div className="flex flex-col">
                     <span className="text-[14px] leading-[20px] font-medium text-black200">
-                      {item.name}
+                      {item?.lastName} {item?.firstName}
                     </span>
                     <span className="text-[14px] leading-[20px] font-normal text-gray600">
-                      {item.email}
+                      {item?.email}
                     </span>
                   </div>
                 </div>
@@ -43,7 +68,11 @@ const TeamMembers = () => {
               <td>
                 <div className="py-[16px] px-[10px]">
                   <span className="text-[14px] leading-[20px] font-normal text-gray600">
-                    {item.level}
+                    {item?.permissions === LEVELONEPERMISSIONS
+                      ? 1
+                      : item?.permissions === LEVELTWOPERMISSIONS
+                      ? 2
+                      : 3}
                   </span>
                 </div>
               </td>
@@ -52,15 +81,22 @@ const TeamMembers = () => {
               <td>
                 <div className="py-[16px] px-[10px]">
                   <span className="text-[14px] leading-[20px] font-normal text-gray600">
-                    {item.date}
+                    {new Date(item?.createdAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "2-digit",
+                      year: "numeric",
+                    })}
                   </span>
                 </div>
               </td>
             ),
-            delete: () => (
+            delete: (item) => (
               <td>
                 <div
-                  onClick={() => setShowDeleteModal(true)}
+                  onClick={() => {
+                    setActionableId(item?.userId);
+                    setShowDeleteModal(true);
+                  }}
                   className="py-[16px] px-[10px] cursor-pointer"
                 >
                   <DeleteIcon />
@@ -95,8 +131,10 @@ const TeamMembers = () => {
             <Button
               type="button"
               btnText="Cancel"
-              onClick={() => setShowDeleteModal(false)}
-              className="border-[#D0D5DD] bg-[#fff] text-[16px] text-[#344054] leading-[24px] font-medium"
+              loading={isLoading}
+              disabled={isLoading}
+              onClick={handleDeleteAdmin}
+              containerClass="border-[#D0D5DD] bg-[#fff] text-[16px] text-[#344054] leading-[24px] font-medium"
             />
 
             <Button
@@ -106,7 +144,7 @@ const TeamMembers = () => {
                 setShowConfirmAction(true);
                 setShowDeleteModal(false);
               }}
-              className="border-primary bg-[#F42727] text-[16px] text-white leading-[24px] font-medium"
+              containerClass="border-[#F42727] bg-[#F42727] text-[16px] text-white leading-[24px] font-medium"
             />
           </div>
         </ModalComponent>

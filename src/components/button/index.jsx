@@ -15,9 +15,10 @@ const Button = ({
 }) => {
   return (
     <div
+      // ref={ref}
       onClick={onClick}
-      className={`flex items-center justify-center gap-[8px] py-[12px] px-[20px] w-full border rounded-[6px] cursor-pointer ${
-        width ? `w-[${width}px]` : "w-[100%]"
+      className={`flex items-center justify-center cursor-pointer gap-[8px] py-[12px] px-[20px] border-[1px] rounded-[6px] disabled:opacity-[0.5] ${
+        width ? `w-[${width}px]` : "w-full"
       } ${containerClass}`}
     >
       <button

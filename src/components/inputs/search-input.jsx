@@ -18,7 +18,7 @@ const SearchInput = ({
         value={value}
         onChange={onChange}
         placeholder={placeholder || "Search"}
-        className={`border-none text-gray500 outline-none placeholder:text-[16px] placeholder:text-gray500 placeholder:leading-[24px] ${className}`}
+        className={`border-none text-gray500 outline-none placeholder:text-[16px] placeholder:text-gray500 placeholder:leading-[24px] w-full ${className}`}
       />
     </div>
   );
