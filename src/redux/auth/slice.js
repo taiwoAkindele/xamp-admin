@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   token: null,
+  adminLevel: null,
 };
 
 const authSlice = createSlice({
@@ -12,9 +13,13 @@ const authSlice = createSlice({
       localStorage.setItem("token", action.payload);
       state.token = action.payload;
     },
+    setAdminLevel: (state, action) => {
+      localStorage.setItem("adminLevel", action.payload);
+      state.adminLevel = action.payload;
+    },
   },
 });
 
-export const { setAuthToken } = authSlice.actions;
+export const { setAuthToken, setAdminLevel } = authSlice.actions;
 
 export default authSlice.reducer;

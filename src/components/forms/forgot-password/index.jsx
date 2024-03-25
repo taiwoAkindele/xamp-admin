@@ -4,12 +4,12 @@ import { Form, Formik } from "formik";
 import Button from "../../button";
 import { ValidationSchema } from "./ValidationSchema";
 import { useNavigate } from "react-router-dom";
-import { useVerifyEmailMutation } from "../../../api/authSlice";
+import { useSendOtpMutation } from "../../../api/authSlice";
 import toast from "react-hot-toast";
 
 const ForgotPasswordForm = () => {
   const navigate = useNavigate();
-  const [verifyEmail, { isLoading }] = useVerifyEmailMutation();
+  const [sendOtp, { isLoading }] = useSendOtpMutation();
 
   return (
     <div>
@@ -17,7 +17,7 @@ const ForgotPasswordForm = () => {
         initialValues={{ email: "" }}
         validationSchema={ValidationSchema}
         onSubmit={async (values, actions) => {
-          verifyEmail(values)
+          sendOtp(values)
             .unwrap()
             .then(() => navigate("/verify-otp", { state: values }))
             .catch((error) => toast.error(error.data.message));

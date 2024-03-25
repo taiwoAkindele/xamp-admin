@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ReactComponent as ArrowLeft } from "../../../assets/icons/arrow-left.svg";
 import { ReactComponent as LocationIcon } from "../../../assets/icons/location.svg";
 import { ReactComponent as FileType } from "../../../assets/icons/file-type.svg";
@@ -11,8 +11,16 @@ import {
   ConfirmAction,
   ModalComponent,
 } from "../../../components";
-import WhiteHouseLodge from "../../../assets/images/white-house-lodge-1.svg";
-import WhiteHouseLodge2 from "../../../assets/images/white-house-lodge-2.svg";
+import {
+  useGetListingQuery,
+  useModifyListingStatusMutation,
+} from "../../../api/listingSlice";
+import { capitalizeFirstLetter } from "../../../utils";
+import UnverifyModal from "../../../components/modal-component/unverify-modal";
+import FreezeModal from "../../../components/modal-component/freeze-modal";
+import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
+import { useSendOtpMutation } from "../../../api/authSlice";
 
 const listingDocuments = [
   { icon: <FileType />, name: "Propety Documents.svg" },
@@ -20,26 +28,60 @@ const listingDocuments = [
   { icon: <FileType />, name: "Propety Documents.svg" },
 ];
 
-const fees_terms = [
-  { name: "Rent", fee: "N700, 000" },
-  { name: "Agent Fee", fee: "N70, 000" },
-  { name: "Caution Fee", fee: "N100, 000" },
-  { name: "Legal Fee", fee: "N35, 000" },
-  { name: "Service Fee", fee: "N100, 000" },
-];
-
-const amenities = [
-  "Heater",
-  "Ceiling fan",
-  "Wardrobe",
-  "Cable or Satellite Tv",
-  "Air conditioning",
-];
-
 const ListingDetails = () => {
-  const { state } = useLocation();
   const navigate = useNavigate();
+  const { id } = useParams();
+  const { data } = useGetListingQuery(id);
+  const { data: listing } = data || {};
+  const { User: user } = listing || {};
+
+  const [isShowMoreAmenities, setIsShowMoreActivities] = useState(false);
+  const [amenities, setAmenities] = useState([]);
+  const [freeze, setFreeze] = useState(false);
+  const [flagIsUnverified, setFlagIsUnverified] = useState(false);
   const [showConfirmAction, setShowConfirmAction] = useState(false);
+  const [changeVerificationStatus, { isLoading }] =
+    useModifyListingStatusMutation();
+  const [sendOtpToMail] = useSendOtpMutation();
+  const { adminLevel } = useSelector((store) => store.auth);
+
+  useEffect(() => {
+    if (listing?.tags > 5 && !isShowMoreAmenities) {
+      setAmenities(listing?.tags?.slice(0, 5));
+    } else {
+      setAmenities(listing?.tags);
+    }
+  }, [listing]);
+
+  const handleVerificationOtp = () => {
+    const payload = { email: user?.email };
+    sendOtpToMail(payload)
+      .unwrap()
+      .then(() => {
+        setShowConfirmAction(true);
+        setFlagIsUnverified(false);
+      })
+      .catch((error) => {
+        toast.error(error?.data?.message || "An error occurred, try again!");
+      });
+  };
+
+  const handleConfirmAction = () => {
+    if (flagIsUnverified) {
+      const otp = localStorage.getItem("otp");
+      const payload = { otp: otp };
+      changeVerificationStatus({ payload: payload, id: id })
+        .unwrap()
+        .then(() => {
+          localStorage.removeItem("otp");
+          setShowConfirmAction(false);
+        })
+        .catch((error) => {
+          toast.error(error?.data?.message || "An error occurred, try again!");
+        });
+    }
+  };
+
   return (
     <div className="flex flex-col gap-[20px]">
       <div
@@ -53,41 +95,55 @@ const ListingDetails = () => {
       <div className="flex items-center justify-between">
         <div className="">
           <h6 className="font-semibold text-[24px] leading-[28px] text-black200 capitalize">
-            White House Lodge
+            {capitalizeFirstLetter(listing?.title)}
           </h6>
           <p className="text-[16px] leading-[20px] font-normal text-black500">
-            100 Smith Street Collingwood VIC 3066 AU
+            {capitalizeFirstLetter(listing?.address)}{" "}
+            {capitalizeFirstLetter(listing?.city)}{" "}
+            {capitalizeFirstLetter(listing?.country)}
           </p>
         </div>
-        <Button
-          btnText="Request Permission"
-          type="button"
-          width={100}
-          onClick={() => setShowConfirmAction(true)}
-          className="text-black400 h-[40px] text-[16px] leading-[24px] font-medium flex items-center gap-[8px]"
-        />
+        {adminLevel !== 1 && (
+          <div className="flex items-center gap-[8px]">
+            <Button
+              btnText={listing?.isVerified ? "Flag as unverified" : "Verify"}
+              onClick={() => setFlagIsUnverified(true)}
+              type="button"
+              width={100}
+              containerClass="text-[#EA1212] h-[40px] border-[#EA1212] bg-[#fff] text-[16px] leading-[24px] font-medium flex items-center gap-[8px]"
+            />
+
+            <Button
+              btnText={!listing?.approved ? "Approve" : "Unapprove"}
+              // onClick={() => setShowModal(true)}
+              type="button"
+              width={100}
+              containerClass="text-[#fff] border-[#023E8A] bg-[#023E8A] h-[40px] text-[16px] leading-[24px] font-medium flex items-center gap-[8px]"
+            />
+          </div>
+        )}
       </div>
-      <div className="flex gap-[12px]">
+      <div className="grid grid-cols-3 gap-[12px]">
         <img
-          src={WhiteHouseLodge}
+          src={listing?.images?.[0]}
           alt=""
-          className="h-[388px] w-[755px] rounded-l-[12px]"
+          className="h-[388px] col-span-2 w-full object-cover rounded-l-[12px]"
         />
         <div className="flex flex-col gap-[12px]">
           <img
-            src={WhiteHouseLodge2}
+            src={listing?.images?.[1]}
             alt=""
-            className="w-[312px] h-[188px] object-cover rounded-r-[12px]"
+            className="w-full h-[188px] object-cover rounded-r-[12px]"
           />
           <img
-            src={WhiteHouseLodge2}
+            src={listing?.images?.[2]}
             alt=""
-            className="w-[312px] h-[188px] object-cover rounded-r-[12px]"
+            className="w-full h-[188px] object-cover rounded-r-[12px]"
           />
         </div>
       </div>
-      <div className="flex items-start gap-[32px]">
-        <Box className="p-[24px] w-[712px]">
+      <div className="grid grid-cols-3 gap-[32px]">
+        <Box className="col-span-2 p-[24px]">
           <div className="flex flex-col gap-[24px] border-b border-b-[#D0D5DD] pb-[32px] ">
             <h6 className="text-[18px] leading-[21px] font-semibold text-black100 capitalize">
               Property details
@@ -96,26 +152,23 @@ const ListingDetails = () => {
               <div className="flex items-center gap-[8px]">
                 <div className="font-normal text-[16px] leading-[18px] text-black100">
                   <span className="font-semibold text-[16px] leading-[18px] text-black100">
-                    1
+                    {listing?.bedrooms}
                   </span>
                   Bed
                 </div>
                 <div className="font-normal text-[16px] leading-[18px] text-black100">
                   <span className="font-semibold text-[16px] leading-[18px] text-black100">
-                    2
+                    {listing?.bathrooms}
                   </span>
                   Baths
                 </div>
               </div>
               <span className="font-semibold text-[20px] leading-[23px] text-black100">
-                N1,0000,000
+                N{listing?.price}
               </span>
             </div>
             <p className="font-normal text-[16px] leading-[26px] text-black400">
-              Dolor enim eu tortor urna sed duis nulla. Aliquam vestibulum,
-              nulla odio nisl vitae. In aliquet pellentesque aenean hac
-              vestibulum turpis mi bibendum diam. Tempor integer aliquam in
-              vitae malesuada fringilla.
+              {listing?.description}
             </p>
             <div className="flex items-center gap-[8px]">
               <LocationIcon />
@@ -135,7 +188,7 @@ const ListingDetails = () => {
               Amenities
             </h6>
             <ul className="flex flex-col gap-[8px]">
-              {amenities.map((item, i) => (
+              {amenities?.map((item, i) => (
                 <li
                   key={i}
                   className="list-disc text-[16px] leading-[20px] ml-[30px] text-subtext"
@@ -144,16 +197,21 @@ const ListingDetails = () => {
                 </li>
               ))}
             </ul>
-            <span className="text-[14px] leading-[16px] font-medium text-black100">
-              See more
-            </span>
+            {listing?.tags?.length > 5 && (
+              <span
+                onClick={() => setIsShowMoreActivities(true)}
+                className="text-[14px] cursor-pointer leading-[16px] font-medium text-black100"
+              >
+                {!isShowMoreAmenities ? "Show more" : "Show Less"}
+              </span>
+            )}
           </div>
           <div className="pt-[24px]">
             <div className="flex flex-col gap-[11px] pb-[24px]">
               <h6 className="text-[18px] leading-[22px] font-semibold text-black100 capitalize">
                 Fees & Terms
               </h6>
-              {fees_terms.map((item) => (
+              {listing?.Fees?.map((item) => (
                 <div
                   key={item.name}
                   className="flex items-center justify-between"
@@ -169,29 +227,29 @@ const ListingDetails = () => {
                   Total:
                 </span>
                 <span className="font-semibold text-[16px] leading-[18px] text-black100">
-                  N1, 005, 000
+                  N{listing?.price}
                 </span>
               </div>
             </div>
           </div>
         </Box>
-        <Box className="py-[24px] px-[20px] flex flex-col gap-[20px]">
+        <Box className="py-[24px] px-[20px] flex flex-col gap-[20px] h-max">
           <span className="font-semibold text-[16px] leading-[18px] text-black100">
             About Owner
           </span>
           <Owner />
           <div className="flex flex-col gap-[16px]">
             <h6 className="font-semibold text-[16px] leading-[18px] text-black100 capitalize">
-              ofunwa okafor
+              {user?.lastName} {user?.firstName}
             </h6>
             <p className="font-normal text-[14px] leading-[20px] text-subtext">
-              Dolor enim eu tortor urna sed duis nulla. Aliquam vestibulum,
-              nulla odio nisl vitae.{" "}
+              {user?.bio || ""}
             </p>
           </div>
           <Button
             btnText="View owner profile"
-            className="bg-[#023E8A] font-medium text-[16px] leading-[24px]"
+            onClick={() => navigate(`/users/${user?.userId}`)}
+            containerClass="bg-[#023E8A] font-medium text-[16px] leading-[24px]"
           />
         </Box>
       </div>
@@ -213,12 +271,29 @@ const ListingDetails = () => {
           ))}
         </div>
       </Box>
+      {freeze && (
+        <FreezeModal
+          show={freeze}
+          onClose={() => setFreeze(false)}
+          onContinue={() => {
+            setShowConfirmAction(true);
+            setFreeze(false);
+          }}
+        />
+      )}
+      {flagIsUnverified && (
+        <UnverifyModal
+          show={flagIsUnverified}
+          onClose={() => setFlagIsUnverified(false)}
+          onContinue={handleVerificationOtp}
+        />
+      )}
       {showConfirmAction && (
         <ModalComponent
           show={showConfirmAction}
           onClose={() => setShowConfirmAction(false)}
         >
-          <ConfirmAction nextAction={() => setShowConfirmAction(false)} />
+          <ConfirmAction nextAction={handleConfirmAction} />
         </ModalComponent>
       )}
     </div>

@@ -4,6 +4,7 @@ import { protectedRoutes } from "../routes";
 
 const Content = () => {
   const token = localStorage.getItem("token");
+
   return (
     <>
       {token ? (
